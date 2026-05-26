@@ -145,4 +145,4 @@ and stores `231` in RAM address `13`.
 
 This project was made as a learning project, not as a practical CPU emulator. The fun of it is that the "hardware" is visible in the spreadsheet: each register, flag, memory byte, and control signal can be watched directly while the program runs.
 
-Created by Vytenis Narmontas.
+Created by me, Vytenis Narmontas.
