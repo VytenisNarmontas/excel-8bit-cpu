@@ -1,148 +1,81 @@
-# 8-bit PC in Excel
+# Excel 8-bit CPU
 
-An 8-bit CPU simulator built entirely inside Microsoft Excel. The workbook uses ordinary spreadsheet formulas, named ranges, iterative calculation, and a small set of VBA buttons to behave like a tiny programmable computer.
+**A tiny programmable computer built inside an Excel workbook.** Write a short program, advance its clock, and watch the memory and registers change in spreadsheet cells.
 
-The project was created as an educational experiment in building computer architecture concepts from spreadsheet cells: RAM, ROM, a program counter, an instruction register, an accumulator, flags, and a simple fetch/execute cycle.
+I wanted to learn how a CPU works. Building one in Excel seemed like an entertaining way to find out.
 
-## Project History
+| Inside the CPU | Instructions and program memory |
+| :---: | :---: |
+| [![CPU registers and control cells in the saved workbook.](media/registers-preview.png)](media/registers.png) | [![Instruction reference and the included program stored as binary bytes.](media/program-preview.png)](media/program.png) |
 
-This project was originally created in 2024 and went through three major iterations. The first two versions are now lost media.
+*Previews of the actual saved workbook, before running a program. Click either image to enlarge it. The VBA buttons are outside these views.*
 
-The idea was inspired by the many Minecraft redstone computers people have built online. I wanted to understand how computers work at a very low level, and I felt that building one myself would be the best way to learn. At the same time, I wanted to make something a little unusual. When I started, I could only find a couple of online threads discussing similar Excel-based computer projects, so I knew the idea was possible, but still uncommon.
+**[Download the workbook](https://github.com/VytenisNarmontas/excel-8bit-cpu/raw/refs/heads/main/8bit_pc.xlsm)** · **[Setup and programming guide](docs/USAGE.md)**
 
-The first version relied heavily on VBA for the calculations and decision-making. That version helped me check whether I actually understood how a simple computer should work before trying to rebuild the logic directly in spreadsheet cells.
+---
 
-The second version was much less successful. I learned that building a clock and self-referential memory cells in Excel is tricky because of how Excel recalculates formulas. In practice, the sheet calculated from left to right and top to bottom, which affected the order in which RAM, PC, ACC, and other state cells updated. This meant some parts of the machine had to be physically moved around the worksheet for the timing to work correctly.
+## What is it?
 
-Rather than keep rearranging the broken version, I decided to rebuild the project a third time. I also wanted a cleaner way to write a program in ROM and load it into RAM without overwriting the RAM formulas.
+A CPU carries out a program by reading instructions, doing calculations, storing results, and deciding which instruction comes next. This workbook models a small version of that process where you can see the pieces directly.
 
-The third iteration worked as intended, and that is the version preserved in this repository.
+Here, **8-bit** means each value is stored as eight binary digits: a number from **0 to 255**. The machine has just **16 bytes of RAM**, so the program and its data have to share a very small space.
 
-## What It Does
+The cells represent:
 
-`8bit_pc.xlsm` simulates a very small 8-bit computer with:
+- **Memory:** the instructions and numbers the program uses.
+- **A program counter:** the address of the current instruction.
+- **An instruction register:** the instruction being carried out.
+- **An accumulator:** the working value used for calculations.
+- **A zero flag:** a signal that lets a program make a decision when a calculation reaches zero.
 
-- 16 bytes of RAM
-- 16 bytes of editable ROM/program storage
-- 8-bit instructions split into a 4-bit opcode and 4-bit operand
-- A program counter
-- An instruction register
-- An accumulator
-- A zero flag
-- Step-by-step execution through Excel buttons
+The formulas do the CPU work. Small VBA controls advance the clock, reset the machine, and load a program. The workbook models these parts with spreadsheet logic and arithmetic; it does not simulate individual transistors or logic gates.
 
-The included example program multiplies two numbers by repeated addition. The values are stored in memory, and the result is written back into RAM.
+## Where the idea came from
 
-## Requirements
+I had seen people build computers with Minecraft redstone and wanted to understand how something like that worked. I had also found a few discussions about doing it in Excel, so I decided to try building my own.
 
-- Microsoft Excel with macro support
-- Macros enabled for the workbook
-- Iterative calculation enabled
+The appeal was being able to look at the whole machine. Instead of hiding everything behind a program window, the memory, registers, and control signals are right there in the cells.
 
-Excel settings required:
+## Three attempts to make it work
 
-- Enable iterative calculation
-- Maximum Iterations: `1`
-- Maximum Change: `100`
+I started in **2024** and spent **roughly two to three months** across three versions. This preserved version took **about three weeks**.
 
-These settings matter because several cells intentionally refer to themselves. That self-reference is how the workbook stores state between calculation steps.
+1. **First version:** I used a lot of VBA for calculations and decisions. It helped me check my understanding of how a simple computer should behave.
+2. **Second version:** I moved more of the work into formulas, but ran into problems with the clock, cells retaining their values, and the timing of recalculation. I ended up moving parts of the machine around the sheet to try to get the updates to happen in the right order.
+3. **Third version:** I rebuilt it with cleaner timing and a way to load a program without overwriting the memory formulas. This is the version in the repository; the first two are no longer available.
 
-## How To Run
+AI helped with some cell formulas and wrote the VBA controls. I checked the formulas and code before using them, then tested programs in the workbook.
 
-1. Open `8bit_pc.xlsm` in Microsoft Excel.
-2. Enable macros when prompted.
-3. Enable iterative calculation using the settings above.
-4. Press `RESET` a few times to clear the CPU state.
-5. Press `LOAD` to copy the ROM program into RAM.
-6. Press `STEP` to run one clock phase at a time, or `RUN` to execute until the program stops.
+## What works
 
-## Workbook Layout
+The included example calculates **11 × 21 = 231** by repeated addition and stores the answer at **RAM address 13**. I tested that example and other short programs that fit in the available memory.
 
-The workbook has two sheets:
+The instruction set can load, add, subtract, store, jump, branch when the result is zero, and halt. You can step through the clock phases to watch the state change, or use **RUN** for a program with a suitable stopping condition.
 
-- `Notebook`: short notes about CPU components.
-- `MAIN`: the actual simulator.
+The workbook is still a small learning experiment. Its main constraints are:
 
-Important areas on `MAIN`:
+- **Tiny memory:** instructions and data share 16 bytes of RAM.
+- **8-bit arithmetic:** values wrap around at 256.
+- **Excel-specific setup:** it needs desktop Excel, VBA macros, and particular iterative-calculation settings.
+- **A reset quirk:** RESET sometimes needs several presses to clear the state, including the zero flag.
+- **A simple Run control:** RUN stops on HALT or when the program counter reaches address 15. It cannot detect every endless loop.
 
-| Range | Purpose |
-|---|---|
-| `AF1:AM16` | ROM/program bytes |
-| `A40:H55` | RAM bits |
-| `I40:I55` | RAM addresses |
-| `J40:J55` | RAM values as decimal |
-| `L10` | LOAD signal |
-| `L11` | RESET signal |
-| `L12` | TICK/clock phase |
-| `L14:S14` | Program counter bits |
-| `L16` | Program counter as decimal |
-| `L17:S17` | Instruction register |
-| `L20` | Decoded opcode |
-| `L21` | Decoded operand |
-| `L22` | Accumulator as decimal |
-| `L23` | RAM value at operand address |
-| `L24` | Next accumulator value |
-| `L26` | Zero flag |
-| `L28:S28` | Accumulator bits |
+## Try it
 
-## Instruction Set
+1. Download `8bit_pc.xlsm` and open it in **desktop Microsoft Excel** with VBA support.
+2. Enable the workbook's macros and switch to the **MAIN** sheet.
+3. Enable iterative calculation with **Maximum Iterations = 1** and **Maximum Change = 100**.
+4. Press **RESET** a few times, then **LOAD**.
+5. Use **STEP** to advance one clock phase, or **RUN** for the included example. Look for **231 at RAM address 13** in the decimal-value column.
 
-Each instruction is one byte:
+The [usage guide](docs/USAGE.md) explains the controls, cell locations, example program, and how to write your own. Work on a copy if you want to experiment. Excel for the web cannot run the VBA controls; see [Microsoft's VBA guidance](https://support.microsoft.com/en-au/excel/work-with-vba-macros-in-excel-for-the-web).
 
-- High 4 bits: opcode
-- Low 4 bits: operand/address
+## Possible next steps
 
-| Opcode | Mnemonic | Behavior |
-|---|---|---|
-| `0000` | `LDA` | `ACC <- RAM[operand]` |
-| `0001` | `ADD` | `ACC <- ACC + RAM[operand]` |
-| `0010` | `SUB` | `ACC <- ACC - RAM[operand]` |
-| `0011` | `STA` | `RAM[operand] <- ACC` |
-| `0100` | `JMP` | Jump to operand address |
-| `0101` | `JZ` | Jump to operand address if zero flag is set |
-| `1111` | `HALT` | Stop advancing the program counter |
+A short recording of a program running and a few more documented example programs would make it easier to explore. These are ideas for future additions.
 
-Arithmetic wraps around at 8 bits using modulo 256.
+---
 
-## How It Works
+Created by **Vytenis Narmontas** as a hobby project to learn about CPUs. Built with help from AI, with the formulas and VBA checked before use.
 
-The simulator is built around Excel recalculation.
-
-The VBA buttons do not implement the CPU themselves. Instead, they change control cells such as `LOAD`, `RESET`, and `TICK`, then force Excel to recalculate. The worksheet formulas do the CPU work.
-
-The clock has two main phases:
-
-- `TICK = 1`: fetch/decode the instruction and calculate next values.
-- `TICK = 2`: commit state changes such as program counter, accumulator, and flags.
-
-Many formulas are intentionally self-referential. For example, a RAM cell keeps its current value unless reset, loaded from ROM, or overwritten by a store instruction. This is why iterative calculation must be enabled.
-
-## VBA Buttons
-
-The workbook includes these buttons:
-
-| Button | Macro | Purpose |
-|---|---|---|
-| `STEP` | `StepClock` | Advances the clock through the next phase |
-| `RESET` | `ResetCPU` | Clears CPU state |
-| `LOAD` | `LoadProgram` | Copies ROM into RAM |
-| `RUN` | `Run` | Repeatedly steps until halt/end condition |
-| `DELETE ALL` | `ZeroROM` | Clears the ROM area |
-
-## Example Program
-
-The included ROM program demonstrates multiplication by repeated addition. It uses memory address `13` for the result, address `14` as a counter, address `15` as the value to repeatedly add, and address `12` as the constant `1`.
-
-With the included values, the program calculates:
-
-```text
-11 * 21 = 231
-```
-
-and stores `231` in RAM address `13`.
-
-## Notes
-
-This project was made as a learning project, not as a practical CPU emulator. The fun of it is that the "hardware" is visible in the spreadsheet: each register, flag, memory byte, and control signal can be watched directly while the program runs.
-
-Created by me, Vytenis Narmontas.
+**License:** [MIT](LICENSE). Microsoft Excel is required separately.
